@@ -10,8 +10,8 @@ KERNEL_MODULES_INSTALL := system
 KERNEL_MODULES_OUT := $(TARGET_OUT)/lib/modules
 KERNEL_IMG=$(KERNEL_OUT)/arch/arm/boot/Image
 
-DTS_NAMES := msm8974
-DTS_FILES = $(wildcard ./arch/arm/boot/dts/$(G2_DTS_TARGET)/*.dts)
+DTS_NAMES := $(DT_NAME)
+DTS_FILES = $(wildcard ./arch/arm/boot/dts/$(DTS_TARGET).dts)
 
 DTS_FILE = $(lastword $(subst /, ,$(1)))
 DTB_FILE = $(addprefix $(KERNEL_OUT)/arch/arm/boot/,$(patsubst %.dts,%.dtb,$(call DTS_FILE,$(1))))
@@ -72,7 +72,7 @@ dtc:
 	@echo KERNEL_ZIMG=$(KERNEL_ZIMG)
 	@echo DTC=$(DTC)
 	@echo KERNEL_IMG=$(KERNEL_IMG)
-	@echo G2_DTS_TARGET=$(G2_DTS_TARGET)
+	@echo DTS_TARGET=$(DTS_TARGET)
 	$(append-dtb)
 
 endif

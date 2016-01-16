@@ -1,14 +1,15 @@
+
 ###########################################################
 # set android version
 ###########################################################
-ANDROID_VERSION=KK
+#ANDROID_VERSION=MM
 
 
 ###########################################################
 # set recovery version
 ###########################################################
 if [ -f $RAMDISK_SRC_DIR/res/twrp ]; then
-BUILD_RECOVERY_VER=TWRP-V2.7.1.1
+BUILD_RECOVERY_VER=TWRP-V2.7.3.0
 else
 BUILD_RECOVERY_VER=CWM-V6.0.4.9_r2
 fi
