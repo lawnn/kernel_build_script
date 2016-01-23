@@ -139,9 +139,9 @@ make_loki_image()
 make_bump_image()
 {
     echo -e "${green}"
-    echo "=== execute loki patch ==="
+    echo "=== execute BUMP patch ==="
     echo -e "${restore}"
-    ./release-tools/open_bump.py $IMAGE_NAME ./release-tools/$TARGET_DEVICE/aboot.mbn $BIN_DIR/$IMAGE_NAME.img $BIN_DIR/$IMAGE_NAME.lok
-    mv $BIN_DIR/$IMAGE_NAME.lok $BIN_DIR/$IMAGE_NAME.img
+    ./release-tools/open_bump.py $BIN_DIR/$IMAGE_NAME.img
+    mv $BIN_DIR/${IMAGE_NAME}_bumped.img $BIN_DIR/$IMAGE_NAME.img
 }
 
