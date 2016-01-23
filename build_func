@@ -15,50 +15,101 @@ copy_ramdisk()
     fi
 }
 
+make_boot_dt_image()
+{
+    
+    echo -e "${green}"
+    echo "=== make_boot_dt_image ==="
+    echo -e "${restore}"
+KERNEL_ZIMG=${OBJ_DIR}/arch/arm/boot/zImage
+DTC=${OBJ_DIR}/scripts/dtc/dtc
+
+if ! [ -d ${OBJ_DIR}/arch/arm/boot ] ; then
+  echo "error no directory : "${OBJ_DIR}/arch/arm/boot""
+  exit -1
+else
+  echo "rm files in : "${OBJ_DIR}/arch/arm/boot/*-zImage""
+  rm ${OBJ_DIR}/arch/arm/boot/*-zImage
+  echo "rm files in : "${OBJ_DIR}/arch/arm/boot/*.dtb""
+  rm ${OBJ_DIR}/arch/arm/boot/*.dtb
+fi
+
+for DTS_FILE in `ls ./arch/arm/boot/dts/${DTS_NAMES}.dts`
+do
+  DTB_FILE=${DTS_FILE%.dts}.dtb
+  DTB_FILE=${OBJ_DIR}/arch/arm/boot/${DTB_FILE##*/}
+  ZIMG_FILE=${DTB_FILE%.dtb}-zImage
+
+  echo -e "${green}"
+  echo ""
+  echo "dts : $DTS_FILE"
+  echo "dtb : $DTB_FILE"
+  echo "out : $ZIMG_FILE"
+  echo ""
+  echo -e "${restore}"
+
+  $DTC -p 1024 -O dtb -o $DTB_FILE $DTS_FILE
+  cat $KERNEL_ZIMG $DTB_FILE > $ZIMG_FILE
+done
+
+echo -e "${green}"
+echo ""
+echo "=====> build DT image"
+echo -e "${restore}"
+INSTALLED_DTIMAGE_TARGET=${OBJ_DIR}/dt.img
+DTBTOOL=./release-tools/dtbToolCM
+
+echo -e "${green}"
+echo "DT image target : $INSTALLED_DTIMAGE_TARGET"
+echo "$DTBTOOL -o $INSTALLED_DTIMAGE_TARGET -s $KERNEL_PAGESIZE \
+    -p ${OBJ_DIR}/scripts/dtc/ ${OBJ_DIR}/arch/arm/boot/"
+echo -e "${restore}"
+$DTBTOOL -o $INSTALLED_DTIMAGE_TARGET -s $KERNEL_PAGESIZE \
+    -p ${OBJ_DIR}/scripts/dtc/ ${OBJ_DIR}/arch/arm/boot/
+chmod a+r $INSTALLED_DTIMAGE_TARGET
+
+echo -e "${green}"
+echo ""
+echo "=====> CREATE RELEASE IMAGE"
+echo -e "${restore}"
+}
+
 make_boot_image()
 {
+    echo -e "${green}"
     echo "=== make_boot_image ==="
+    echo -e "${restore}"
     ./release-tools/mkbootfs ${RAMDISK_TMP_DIR} > ${BIN_DIR}/ramdisk-${IMAGE_NAME}.cpio
     ./release-tools/minigzip < ${BIN_DIR}/ramdisk-${IMAGE_NAME}.cpio > ${BIN_DIR}/ramdisk-${IMAGE_NAME}.img
 #    lzma < ${BIN_DIR}/ramdisk-${IMAGE_NAME}.cpio > ${BIN_DIR}/ramdisk-${IMAGE_NAME}.img
     ./release-tools/mkbootimg --cmdline "${KERNEL_CMDLINE}" --base ${KERNEL_BASEADDRESS} --pagesize ${KERNEL_PAGESIZE} --ramdisk_offset ${KERNEL_RAMDISK_OFFSET} --tags_offset ${KERNEL_TAGS_OFFSET} --kernel ${BIN_DIR}/kernel --ramdisk ${BIN_DIR}/ramdisk-${IMAGE_NAME}.img --output ${BIN_DIR}/${IMAGE_NAME}.img --dt ${BIN_DIR}/dt.img
+    echo -e "${green}"
     echo "  $BIN_DIR/$IMAGE_NAME.img"
+    echo -e "${restore}"
     rm $BIN_DIR/ramdisk-$IMAGE_NAME.img
     rm $BIN_DIR/ramdisk-$IMAGE_NAME.cpio
     rm $BIN_DIR/kernel
     rm $BIN_DIR/dt.img
 }
 
-
-make_boot_dt_image()
-{
-    echo "=== make_boot_DT_image ==="
-       make dtc -f ./dtc.mk
-    ./release-tools/mkbootfs $RAMDISK_TMP_DIR > $BIN_DIR/ramdisk-$IMAGE_NAME.cpio
-    ./release-tools/minigzip < $BIN_DIR/ramdisk-$IMAGE_NAME.cpio > $BIN_DIR/ramdisk-$IMAGE_NAME.img
-    ./release-tools/dtbToolCM -o $BIN_DIR/ramdisk-$IMAGE_NAME.dtb -s 2048 -p $OBJ_DIR/scripts/dtc/ $OBJ_DIR/arch/arm/boot/
-
-    ./release-tools/mkbootimg --cmdline "$KERNEL_CMDLINE" --base $KERNEL_BASEADDRESS --pagesize 2048 --ramdisk_offset $KERNEL_RAMDISK_OFFSET --tags_offset $KERNEL_TAGS_OFFSET --kernel $BIN_DIR/kernel --dt $BIN_DIR/ramdisk-$IMAGE_NAME.dtb --ramdisk $BIN_DIR/ramdisk-$IMAGE_NAME.img --output $BIN_DIR/$IMAGE_NAME.img
-    echo "  $BIN_DIR/$IMAGE_NAME.img"
-    rm $BIN_DIR/ramdisk-$IMAGE_NAME.img
-    rm $BIN_DIR/ramdisk-$IMAGE_NAME.cpio
-    rm $BIN_DIR/kernel 
-    rm $BIN_DIR/ramdisk-$IMAGE_NAME.dtb
-}
-
-
 make_odin3_image()
 {
+    echo -e "${green}"
     echo "=== make_odin3_image ==="
+    echo -e "${restore}"
     tar cf $BUILD_LOCALVERSION-$IMAGE_NAME-odin.tar $IMAGE_NAME.img
     md5sum -t $BUILD_LOCALVERSION-$IMAGE_NAME-odin.tar >> $BUILD_LOCALVERSION-$IMAGE_NAME-odin.tar
     mv $BUILD_LOCALVERSION-$IMAGE_NAME-odin.tar $BUILD_LOCALVERSION-$IMAGE_NAME-odin.tar.md5
+    echo -e "${green}"
     echo "  $BIN_DIR/$BUILD_LOCALVERSION-$IMAGE_NAME-odin.tar.md5"
+    echo -e "${restore}"
 }
 
 make_TWRP_image()
 {
+    echo -e "${green}"
     echo "=== make_TWRP_image ==="
+    echo -e "${restore}"
     if [ -d tmp ]; then
         rm -rf tmp
     fi
@@ -71,19 +122,25 @@ make_TWRP_image()
     java -jar $SIGNAPK_DIR/signapk.jar -w $SIGNAPK_DIR/testkey.x509.pem $SIGNAPK_DIR/testkey.pk8 cwm.zip $BUILD_LOCALVERSION-$IMAGE_NAME-signed.zip
     rm cwm.zip
     rm -rf tmp
+    echo -e "${green}"
     echo "  $BIN_DIR/$BUILD_LOCALVERSION-$IMAGE_NAME-signed.zip"
+    echo -e "${restore}"
 }
 
 make_loki_image()
 {
+    echo -e "${green}"
     echo "=== execute loki patch ==="
+    echo -e "${restore}"
     ./release-tools/loki/loki_patch-linux-x86_64 $IMAGE_NAME ./release-tools/$TARGET_DEVICE/aboot.mbn $BIN_DIR/$IMAGE_NAME.img $BIN_DIR/$IMAGE_NAME.lok
     mv $BIN_DIR/$IMAGE_NAME.lok $BIN_DIR/$IMAGE_NAME.img
 }
 
 make_bump_image()
 {
+    echo -e "${green}"
     echo "=== execute loki patch ==="
+    echo -e "${restore}"
     ./release-tools/open_bump.py $IMAGE_NAME ./release-tools/$TARGET_DEVICE/aboot.mbn $BIN_DIR/$IMAGE_NAME.img $BIN_DIR/$IMAGE_NAME.lok
     mv $BIN_DIR/$IMAGE_NAME.lok $BIN_DIR/$IMAGE_NAME.img
 }

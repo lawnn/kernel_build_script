@@ -32,10 +32,7 @@ modules.builtin
 *.lzo
 *.patch
 *.gcno
-*.rej
-*.orig		
-patch-3.*		
-*.log
+
 #
 # Top-level generic files
 #
@@ -47,7 +44,6 @@ patch-3.*
 /System.map
 /Module.markers
 /Module.symvers
-/out/
 
 #
 # Debian directory (make deb-pkg)
@@ -85,10 +81,9 @@ GRTAGS
 GSYMS
 GTAGS
 
-android-toolchain/share/gdb/python/gdb/__pycache__/
-android-toolchain/share/gdb/python/gdb/command/__pycache__/
-android-toolchain/share/gdb/python/gdb/function/__pycache__/
-
 *.orig
 *~
 \#*#
+
+*.log
+/out
